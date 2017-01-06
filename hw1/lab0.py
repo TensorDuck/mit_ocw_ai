@@ -31,27 +31,59 @@ ANSWER_1 = 'fill-me-in'
 # Problem 2.1: Warm-Up Stretch
 
 def cube(x):
-    raise NotImplementedError
+    return x**3
 
 def factorial(x):
-    raise NotImplementedError
+    if not type(x) == int:
+        raise Exception("x must be an integer")
+    if x < 0:
+        raise Exception("x must be positive")
+    total = 1
+    for i in range(x):
+        total *= i+1
+
+    return total
 
 def count_pattern(pattern, lst):
-    raise NotImplementedError
+    count = 0
+    lst_size = len(lst)
+    pat_size = len(pattern)
+    for idx in range(lst_size - pat_size + 1):
+        val = lst[idx]
+        if val == pattern[0]:
+            found_pattern = True
+            for jdx, jval in enumerate(pattern):
+                if not lst[idx + jdx] == jval:
+                    found_pattern = False
+            if found_pattern:
+                count += 1
 
+    return count
 
 # Problem 2.2: Expression depth
 
 def depth(expr):
-    raise NotImplementedError
+    count = 0
+    if isinstance(expr, (list,tuple)):
+        count += 1
+        all_depths = []
+        for val in expr:
+            all_depths.append(depth(val))
+        count += max(all_depths)
+    return count
 
 
 # Problem 2.3: Tree indexing
 
 def tree_ref(tree, index):
-    raise NotImplementedError
-
-
+    try:
+        current = tree
+        for idx in index:
+            current = current[idx]
+        return current
+    except:
+        raise Exception("Bad Index")
+    
 # Section 3: Symbolic algebra
 
 # Your solution to this problem doesn't go in this file.
