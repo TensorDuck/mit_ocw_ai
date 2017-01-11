@@ -23,7 +23,7 @@
 #   3. Python v3.0
 # Fill in your answer in the next line of code ("1", "2", or "3"):
 
-ANSWER_1 = 'fill-me-in'
+ANSWER_1 = '2'
 
 
 # Section 2: Programming warmup _____________________________________________
@@ -83,7 +83,7 @@ def tree_ref(tree, index):
         return current
     except:
         raise Exception("Bad Index")
-    
+
 # Section 3: Symbolic algebra
 
 # Your solution to this problem doesn't go in this file.

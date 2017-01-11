@@ -16,7 +16,7 @@
 # the distributive law.
 
 # Your goal is to fill in the do_multiply() function so that multiplication
-# can be simplified as intended. 
+# can be simplified as intended.
 
 # Testing will be mathematical:  If you return a flat list that
 # evaluates to the same value as the original expression, you will
@@ -69,7 +69,7 @@ class Sum(list, Expression):
     """
     def __repr__(self):
         return "Sum(%s)" % list.__repr__(self)
-    
+
     def simplify(self):
         """
         This is the starting point for the task you need to perform. It
@@ -99,7 +99,7 @@ class Product(list, Expression):
     """
     def __repr__(self):
         return "Product(%s)" % list.__repr__(self)
-    
+
     def simplify(self):
         """
         To simplify a product, we need to multiply all its factors together
@@ -174,5 +174,58 @@ def do_multiply(expr1, expr2):
     '*' will not help you.
     """
     # Replace this with your solution.
-    raise NotImplementedError
+    print "Trying multiply"
+    print type(expr1)
+    print type(expr2)
+    print len(expr1)
+    print len(expr2)
 
+    w = []
+    for val1 in expr1:
+        for val2 in expr2:
+            w.append(Product([val1,val2]).flatten())
+
+    final = Sum(w)
+
+    return final
+
+
+def do_multiply_general(expr1, expr2):
+    print "Trying multiply"
+    print type(expr1)
+    print type(expr2)
+    print len(expr1)
+    print len(expr2)
+    if len(expr1) == 1 and len(expr2) == 1:
+        return Product([expr1[0],expr2[0]])
+    else:
+        if isinstance(expr1, Sum) and isinstance(expr2, Sum):
+            w = []
+            for val1 in expr1.simplify():
+                for val2 in expr2.simplify():
+                    w.append(Product([val1,val2]).flatten())
+
+            final = Sum(w)
+        elif isinstance(expr1, Product) and isinstance(expr2, Product):
+            w = []
+            for val1 in expr1.simplify():
+                w.append(val1)
+            for val2 in expr2.simplify():
+                w.append(val2)
+            final = Product(w)
+        else:
+            if isinstance(expr1,Product):
+                product_one = expr1.simplify()
+                sum_one = expr2.simplify()
+            else:
+                product_one = expr2.simpilfy()
+                sum_one = expr1.simplify()
+            w = []
+            for val_sum in sum_one:
+                temp = [val_sum]
+                for val_product in product_one:
+                    temp.append(val_product)
+                w.append(Product(temp))
+            final = Sum(w)
+
+    return final
