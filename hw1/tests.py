@@ -67,7 +67,7 @@ def test_short_answer_3_testanswer(val, original_val = None):
 # that 'Martha is dead' so it would work -- and different forward
 # and backward chaining results would be a disaster.  So NOT
 # statements in the antecedent must not have any variables.
-# 
+#
 # You will also note that one pines for the fjords,
 # metaphorically speaking, when one *is* dead.  But that's an
 # error in knowledge discovery or entry, not in programming.
@@ -123,7 +123,7 @@ make_test(type = 'VALUE',
 transitive_rule_1_getargs = "TEST_RESULTS_TRANS1"
 
 def transitive_rule_1_testanswer(val, original_val = None):
-    return ( set(val)  == set([ 'a beats b', 
+    return ( set(val)  == set([ 'a beats b',
                                 'b beats c', 'a beats c' ]) )
 
 # This test checks to make sure that your transitive rule
@@ -142,7 +142,7 @@ make_test(type = 'VALUE',
 transitive_rule_2_getargs = "TEST_RESULTS_TRANS2"
 
 def transitive_rule_2_testanswer(val, original_val = None):
-    return ( set(val) 
+    return ( set(val)
              == set([ 'rock beats rock',
                       'rock beats scissors',
                       'rock beats paper',
@@ -174,7 +174,7 @@ expected_family_relations = [
     'son bob chuck',
     'daughter alice chuck',
     'father chuck alice' ]
-    
+
 def family_rules_1_testanswer(val, original_val = None):
     return ( set( [ x for x in val
                     if x.split()[0] in (
@@ -314,7 +314,7 @@ result_bc_3 = OR('geoff is a giraffe',
                      'geoff has long neck',
                      'geoff has tawny color',
                      'geoff has dark spots'))
-    
+
 def backchain_to_goal_tree_3_testanswer(val, original_val = None):
     return ( tree_map(type_encode(val), frozenset) ==
              tree_map(type_encode(result_bc_3), frozenset))
@@ -329,7 +329,7 @@ make_test(type = 'FUNCTION_ENCODED_ARGS',
           expected_val = str(result_bc_3)
           )
 
-          
+
 ### TEST 13 ###
 
 def backchain_to_goal_tree_4_getargs():
@@ -337,11 +337,11 @@ def backchain_to_goal_tree_4_getargs():
                         '(?x) has (?z)' ),
                    THEN( '(?x) has (?y) and (?z)' ) ),
                IF( '(?x) has rhythm and music',
-                   THEN( '(?x) could not ask for anything more' ) ) ], 
+                   THEN( '(?x) could not ask for anything more' ) ) ],
              'gershwin could not ask for anything more' ]
 
 result_bc_4 = OR('gershwin could not ask for anything more',
-                 'gershwin has rhythm and music', 
+                 'gershwin has rhythm and music',
                  AND('gershwin has rhythm',
                      'gershwin has music'))
 
@@ -359,7 +359,7 @@ make_test(type = 'FUNCTION_ENCODED_ARGS',
           testanswer = backchain_to_goal_tree_4_testanswer,
           expected_val = str(result_bc_4)
           )
-          
+
 
 ### TEST 14 ###
 
@@ -376,7 +376,7 @@ ARBITRARY_EXP = (
     IF( '(?z) i',
         THEN( 'i (?z)' ))
     )
-  
+
 def backchain_to_goal_tree_5_getargs():
     return [ ARBITRARY_EXP, 'zot' ]
 
@@ -397,7 +397,7 @@ make_test(type = 'FUNCTION_ENCODED_ARGS',
           testanswer = backchain_to_goal_tree_5_testanswer,
           expected_val = str(result_bc_5)
           )
-          
+
 
 ### TEST 15 ###
 
@@ -442,4 +442,3 @@ make_test(type = 'VALUE',
           expected_val = '[a boring thing]',
           name = WHAT_I_FOUND_BORING_getargs
           )
-
