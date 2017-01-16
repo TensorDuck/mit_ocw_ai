@@ -13,7 +13,7 @@ import time
 ANSWER1_getargs = "ANSWER1"
 
 def ANSWER1_testanswer(val, original_val = None):
-    return ( val == False )
+    return ( val == "False" )
 
 # If the search space is finite, and your heuristic estimates the distance
 # to the goal, and you allow backtracking, then hill climbing will
@@ -59,7 +59,7 @@ make_test(type = 'VALUE',
 ANSWER2_getargs = "ANSWER2"
 
 def ANSWER2_testanswer(val, original_val = None):
-    return ( val == False )
+    return ( val == "False" )
 
 # Best first search will give an optimal path iff it has an admissible heuristic.
 
@@ -82,7 +82,7 @@ ANSWER3_getargs = "ANSWER3"
 # last node in any path.
 
 def ANSWER3_testanswer(val, original_val = None):
-    return ( val == True )
+    return ( val == "True" )
 
 make_test(type = 'VALUE',
           getargs = ANSWER3_getargs,
@@ -101,7 +101,7 @@ ANSWER4_getargs = "ANSWER4"
 # standard in A* search.
 
 def ANSWER4_testanswer(val, original_val = None):
-    return ( val == True )
+    return ( val == "True" )
 
 make_test(type = 'VALUE',
           getargs = ANSWER4_getargs,
@@ -122,7 +122,7 @@ ANSWER5_getargs = "ANSWER5"
 # costs are the same.
 
 def ANSWER5_testanswer(val, original_val = None):
-    return ( val == True )
+    return ( val == "True")
 
 make_test(type = 'VALUE',
           getargs = ANSWER5_getargs,
@@ -140,7 +140,7 @@ ANSWER6_getargs = "ANSWER6"
 # not the estimated cost to the goal.
 
 def ANSWER6_testanswer(val, original_val = None):
-    return ( val == False )
+    return ( val == "False" )
 
 make_test(type = 'VALUE',
           getargs = ANSWER6_getargs,
@@ -239,7 +239,7 @@ if do_dfs:
         return [ NEWGRAPH1, 'S', 'H' ]
 
     def dfs_1_testanswer(val, original_val = None):
-        return ( NEWGRAPH1.is_valid_path(val) and 
+        return ( NEWGRAPH1.is_valid_path(val) and
                  len( NEWGRAPH1.get_connected_nodes(val[-1]) ) <= 1 )
 
     make_test(type = 'FUNCTION',
@@ -256,7 +256,7 @@ if do_dfs:
         return [ NEWGRAPH2, 'A', 'G' ]
 
     def dfs_2_testanswer(val, original_val = None):
-        return ( NEWGRAPH2.is_valid_path(val) and 
+        return ( NEWGRAPH2.is_valid_path(val) and
                  len( NEWGRAPH2.get_connected_nodes(val[-1]) ) <= 1 )
 
     make_test(type = 'FUNCTION',
@@ -273,7 +273,7 @@ if do_dfs:
         return [ NEWGRAPH3, 'S', 'S' ]
 
     def dfs_3_testanswer(val, original_val = None):
-        return ( NEWGRAPH3.is_valid_path(val) and 
+        return ( NEWGRAPH3.is_valid_path(val) and
                  len( NEWGRAPH3.get_connected_nodes(val[-1]) ) <= 1 )
 
     make_test(type = 'FUNCTION',
@@ -290,8 +290,8 @@ if do_dfs:
         return [ SAQG, 'S', 'G']
 
     def dfs_4_testanswer(val, original_val = None):
-        return (val and (list(val) == list("SQG") or 
-                         list(val) == list("SAG") or 
+        return (val and (list(val) == list("SQG") or
+                         list(val) == list("SAG") or
                          list(val) == list("SG")))
 
     make_test(type = 'FUNCTION',
@@ -620,7 +620,7 @@ def branch_and_bound_6_getargs():
 
 def branch_and_bound_6_testanswer(val, original_val=None):
     return (val and list(val) == list("SBFHKT"))
-            
+
 make_test(type = 'FUNCTION_ENCODED_ARGS',
           getargs = branch_and_bound_6_getargs,
           testanswer = branch_and_bound_6_testanswer,
@@ -723,7 +723,7 @@ def a_star_test_6_getargs():
 
 def a_star_test_6_testanswer(val, original_val=None):
     return (list(val) == list("SBCJLT"))
-            
+
 make_test(type = 'FUNCTION_ENCODED_ARGS',
           getargs = a_star_test_6_getargs,
           testanswer = a_star_test_6_testanswer,
@@ -739,14 +739,14 @@ def a_star_7_getargs():
 
 def a_star_7_testanswer(val, original_val=None):
     return (val and list(val) == list('SACG'))
-            
+
 make_test(type = 'FUNCTION',
           getargs = a_star_7_getargs,
           testanswer = a_star_7_testanswer,
           expected_val = list('SACG'),
           name = 'a_star'
           )
-  
+
 
 ### TEST 32 ###
 
@@ -941,4 +941,3 @@ make_test(type = 'VALUE',
           expected_val = "[a number of hours]",
           name = WHAT_I_FOUND_BORING_getargs
           )
-

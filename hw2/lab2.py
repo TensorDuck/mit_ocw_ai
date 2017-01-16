@@ -7,28 +7,28 @@
 
 # 1: True or false - Hill Climbing search is guaranteed to find a solution
 #    if there is a solution
-ANSWER1 = None
+ANSWER1 = "False"
 
 # 2: True or false - Best-first search will give an optimal search result
 #    (shortest path length).
 #    (If you don't know what we mean by best-first search, refer to
 #     http://courses.csail.mit.edu/6.034f/ai3/ch4.pdf (page 13 of the pdf).)
-ANSWER2 = None
+ANSWER2 = "False"
 
 # 3: True or false - Best-first search and hill climbing make use of
 #    heuristic values of nodes.
-ANSWER3 = None
+ANSWER3 = "True"
 
 # 4: True or false - A* uses an extended-nodes set.
-ANSWER4 = None
+ANSWER4 = "True"
 
 # 5: True or false - Breadth first search is guaranteed to return a path
 #    with the shortest number of nodes.
-ANSWER5 = None
+ANSWER5 = "True"
 
 # 6: True or false - The regular branch and bound uses heuristic values
 #    to speed up the search for an optimal path.
-ANSWER6 = None
+ANSWER6 = "False"
 
 # Import the Graph data structure from 'search.py'
 # Refer to search.py for documentation
@@ -53,9 +53,10 @@ class data_node(object):
         self.left_point = node_to_set
 
 class data_queue(object):
-    def __init__(self):
+    def __init__(self, debug=False):
         self.beginning = None
         self.ending = None
+        self.debug = debug
 
     def add_data_node(self, node_to_add):
         if (self.ending is None) and (self.beginning is None):
@@ -70,14 +71,48 @@ class data_queue(object):
     def get_next(self):
         if self.beginning is None:
             return_node = None
-            print "ERROR: QUEUE IS EMPTY, CANNOT RETRIEVE DATA"
+            if self.debug:
+                print "ERROR: QUEUE IS EMPTY, CANNOT RETRIEVE DATA"
         else:
             return_node = self.beginning
             self.beginning = self.beginning.right_point
             if not self.beginning is None:
                 self.beginning.set_left_node(None)
             if self.beginning is None:
-                print "QUEUE IS EMPTY"
+                self.ending = None
+                if self.debug:
+                    print "QUEUE IS EMPTY"
+            return_node.set_right_node(None)
+
+        return return_node
+
+class data_stack(object):
+    def __init__(self, debug=False):
+        self.beginning = None
+        self.debug = debug
+
+    def add_data_node(self, node_to_add):
+        if (self.beginning is None):
+            # completely empty queue
+            self.beginning = node_to_add
+        else:
+            self.beginning.set_left_node(node_to_add)
+            node_to_add.set_right_node(self.beginning)
+            self.beginning = node_to_add
+
+    def get_next(self):
+        if self.beginning is None:
+            return_node = None
+            if self.debug:
+                print "ERROR: QUEUE IS EMPTY, CANNOT RETRIEVE DATA"
+        else:
+            return_node = self.beginning
+            self.beginning = self.beginning.right_point
+            if not self.beginning is None:
+                self.beginning.set_left_node(None)
+            if self.beginning is None:
+                if self.debug:
+                    print "QUEUE IS EMPTY"
             return_node.set_right_node(None)
 
         return return_node
@@ -122,26 +157,21 @@ class path_list(object):
 
 
 
-def bfs(graph, start, goal):
-    queue = data_queue()
+def bfs(graph, start, goal, debug=False):
     best_path = None
+
     # initialize the queue
-    first_connections = graph.get_connected_nodes(start)
-    if len(first_connections) == 0:
-        # the start node is completely empty
+    queue = data_queue()
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    queue.add_data_node(this)
+    next_up = queue.get_next()
+    if start == goal:
+        best_path = path_object
         go = False
     else:
         go = True
-        count = 0
-        for connections in first_connections:
-            count += 1
-            path = path_list(graph, [start, connections])
-            this = data_node(path)
-            queue.add_data_node(this)
-    print count
-    next_up = queue.get_next()
-    if next_up is None:
-        go = False
+
     # begin iterating
     while go:
         old_path_object = next_up.data #path_list object
@@ -169,7 +199,8 @@ def bfs(graph, start, goal):
         # check if next thing is empty. If so, terminate loop, else keep searching
         next_up = queue.get_next()
         if next_up is None:
-            print "Ending the Loop"
+            if debug:
+                print "Ending the Loop"
             go = False
 
     if best_path is None:
@@ -180,8 +211,55 @@ def bfs(graph, start, goal):
 
 ## Once you have completed the breadth-first search,
 ## this part should be very simple to complete.
-def dfs(graph, start, goal):
-    raise NotImplementedError
+def dfs(graph, start, goal, debug=False):
+    best_path = None
+
+    agenda = data_stack()
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    agenda.add_data_node(this)
+    next_up = agenda.get_next()
+    if start == goal:
+        best_path = path_object
+        go = False
+    else:
+        go = True
+
+    while go:
+        old_path_object = next_up.data #path_list object
+        old_path = old_path_object.path #list of nodes forthe path
+        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+        for connection in next_connections:
+            if connection == goal:
+                old_path_object.add_next_node(connection)
+                if best_path is None:
+                    best_path = old_path_object
+                else:
+                    if best_path.length > old_path_object.length:
+                        best_path = old_path_object
+            else:
+                if not connection in old_path: #only do if no repeat
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
+                    this = data_node(path_object)
+                    agenda.add_data_node(this)
+
+        # check if next thing is empty. If so, terminate loop, else keep searching
+        next_up = agenda.get_next()
+        if next_up is None:
+            if debug:
+                print "Ending the Loop"
+            go = False
+
+    if best_path is None:
+        return []
+    else:
+        return best_path.path
+
 
 
 ## Now we're going to add some heuristics into the search.
