@@ -147,6 +147,14 @@ class path_list(object):
             return length
         else:
             return 0
+
+    @property
+    def heuristic(self, target):
+        length = None
+        if self.size > 0:
+            length = self.graph.get_heuristic(self.path[self.last_idx], target)
+        return length
+
     @property
     def size(self):
         return len(self.path)
@@ -157,7 +165,196 @@ class path_list(object):
 
 
 
-def bfs(graph, start, goal, debug=False):
+def bfs(graph, start, goal, debug=False, optimal=False):
+    best_path = None
+
+    # initialize the queue
+    queue = data_queue()
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    queue.add_data_node(this)
+    next_up = queue.get_next()
+    if start == goal:
+        best_path = path_object
+        go = False
+    else:
+        go = True
+
+    # begin iterating
+    while go:
+        old_path_object = next_up.data #path_list object
+        old_path = old_path_object.path #list of nodes forthe path
+        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+        for connection in next_connections:
+            if connection == goal:
+                if not optimal:
+                    go = False
+                old_path_object.add_next_node(connection)
+                if best_path is None:
+                    best_path = old_path_object
+                else:
+                    if best_path.length > old_path_object.length:
+                        best_path = old_path_object
+            else:
+                if not connection in old_path: #only do if no repeat
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
+                    this = data_node(path_object)
+                    queue.add_data_node(this)
+
+        # check if next thing is empty. If so, terminate loop, else keep searching
+        next_up = queue.get_next()
+        if next_up is None:
+            if debug:
+                print "Ending the Loop"
+            go = False
+
+    if best_path is None:
+        return []
+    else:
+        return best_path.path
+
+
+## Once you have completed the breadth-first search,
+## this part should be very simple to complete.
+def dfs(graph, start, goal, debug=False, optimal=False):
+    best_path = None
+
+    agenda = data_stack()
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    agenda.add_data_node(this)
+    next_up = agenda.get_next()
+    if start == goal:
+        best_path = path_object
+        go = False
+    else:
+        go = True
+
+    while go:
+        old_path_object = next_up.data #path_list object
+        old_path = old_path_object.path #list of nodes forthe path
+        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+        for connection in next_connections:
+            if connection == goal:
+                if not optimal:
+                    go = False
+                old_path_object.add_next_node(connection)
+                if best_path is None:
+                    best_path = old_path_object
+                else:
+                    if best_path.length > old_path_object.length:
+                        best_path = old_path_object
+            else:
+                if not connection in old_path: #only do if no repeat
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
+                    this = data_node(path_object)
+                    agenda.add_data_node(this)
+
+        # check if next thing is empty. If so, terminate loop, else keep searching
+        next_up = agenda.get_next()
+        if next_up is None:
+            if debug:
+                print "Ending the Loop"
+            go = False
+
+    if best_path is None:
+        return []
+    else:
+        return best_path.path
+
+
+
+## Now we're going to add some heuristics into the search.
+## Remember that hill-climbing is a modified version of depth-first search.
+## Search direction should be towards lower heuristic values to the goal.
+def hill_climbing(graph, start, goal, debug=False, optimal=False):
+    best_path = None
+
+    agenda = data_stack()
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    agenda.add_data_node(this)
+    next_up = agenda.get_next()
+    if start == goal:
+        best_path = path_object
+        go = False
+    else:
+        go = True
+    while go:
+        old_path_object = next_up.data #path_list object
+        old_path = old_path_object.path #list of nodes forthe path
+        current_node = old_path[old_path_object.last_idx]
+        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+        # sort by heuristic, then add to the stack
+        connections_h_list = []
+        for connection in next_connections:
+            connections_h_list.append(graph.get_heuristic(connection, goal))
+        next_connections_unsorted = copy.copy(next_connections)
+        connects_h_list_sorted = [] #sorted s.t. greatest values come first
+        sorting = True
+        while sorting:
+            max_val = max(connections_h_list)
+            for sort_idx, sort_val in enumerate(connections_h_list):
+                if sort_val == max_val:
+                    connects_h_list_sorted.append(next_connections[sort_idx])
+                    del connections_h_list[sort_idx]
+                    del next_connections[sort_idx]
+                    break
+            if len(connections_h_list) == 0:
+                sorting = False
+        assert len(connects_h_list_sorted) == len(next_connections_unsorted)
+        for connection in connects_h_list_sorted:
+            if connection == goal:
+                if not optimal:
+                    go = False
+                old_path_object.add_next_node(connection)
+                if best_path is None:
+                    best_path = old_path_object
+                else:
+                    if best_path.length > old_path_object.length:
+                        best_path = old_path_object
+            else:
+                if not connection in old_path: #only do if no repeat
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
+                    this = data_node(path_object)
+                    agenda.add_data_node(this)
+
+        # check if next thing is empty. If so, terminate loop, else keep searching
+        next_up = agenda.get_next()
+        if next_up is None:
+            if debug:
+                print "Ending the Loop"
+            go = False
+
+    if best_path is None:
+        return []
+    else:
+        if graph.is_valid_path(best_path.path):
+            return best_path.path
+        else:
+            raise Exception
+
+## Now we're going to implement beam search, a variation on BFS
+## that caps the amount of memory used to store paths.  Remember,
+## we maintain only k candidate paths of length n in our agenda at any time.
+## The k top candidates are to be determined using the
+## graph get_heuristic function, with lower values being better values.
+def beam_search(graph, start, goal, beam_width):
     best_path = None
 
     # initialize the queue
@@ -199,8 +396,6 @@ def bfs(graph, start, goal, debug=False):
         # check if next thing is empty. If so, terminate loop, else keep searching
         next_up = queue.get_next()
         if next_up is None:
-            if debug:
-                print "Ending the Loop"
             go = False
 
     if best_path is None:
@@ -208,73 +403,6 @@ def bfs(graph, start, goal, debug=False):
     else:
         return best_path.path
 
-
-## Once you have completed the breadth-first search,
-## this part should be very simple to complete.
-def dfs(graph, start, goal, debug=False):
-    best_path = None
-
-    agenda = data_stack()
-    path_object = path_list(graph, [start])
-    this = data_node(path_object)
-    agenda.add_data_node(this)
-    next_up = agenda.get_next()
-    if start == goal:
-        best_path = path_object
-        go = False
-    else:
-        go = True
-
-    while go:
-        old_path_object = next_up.data #path_list object
-        old_path = old_path_object.path #list of nodes forthe path
-        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
-        for connection in next_connections:
-            if connection == goal:
-                old_path_object.add_next_node(connection)
-                if best_path is None:
-                    best_path = old_path_object
-                else:
-                    if best_path.length > old_path_object.length:
-                        best_path = old_path_object
-            else:
-                if not connection in old_path: #only do if no repeat
-                    next_path = copy.copy(old_path)
-                    next_path.append(connection)
-                    if not isinstance(next_path, list):
-                        print next_path
-                        raise Exception
-                    path_object = path_list(graph, next_path)
-                    this = data_node(path_object)
-                    agenda.add_data_node(this)
-
-        # check if next thing is empty. If so, terminate loop, else keep searching
-        next_up = agenda.get_next()
-        if next_up is None:
-            if debug:
-                print "Ending the Loop"
-            go = False
-
-    if best_path is None:
-        return []
-    else:
-        return best_path.path
-
-
-
-## Now we're going to add some heuristics into the search.
-## Remember that hill-climbing is a modified version of depth-first search.
-## Search direction should be towards lower heuristic values to the goal.
-def hill_climbing(graph, start, goal):
-    raise NotImplementedError
-
-## Now we're going to implement beam search, a variation on BFS
-## that caps the amount of memory used to store paths.  Remember,
-## we maintain only k candidate paths of length n in our agenda at any time.
-## The k top candidates are to be determined using the
-## graph get_heuristic function, with lower values being better values.
-def beam_search(graph, start, goal, beam_width):
-    raise NotImplementedError
 
 ## Now we're going to try optimal search.  The previous searches haven't
 ## used edge distances in the calculation.
@@ -282,7 +410,8 @@ def beam_search(graph, start, goal, beam_width):
 ## This function takes in a graph and a list of node names, and returns
 ## the sum of edge lengths along the path -- the total distance in the path.
 def path_length(graph, node_names):
-    raise NotImplementedError
+    pl = path_list(graph, node_names)
+    return pl.length
 
 
 def branch_and_bound(graph, start, goal):
