@@ -52,6 +52,10 @@ class data_node(object):
     def set_left_node(self, node_to_set):
         self.left_point = node_to_set
 
+    def print_statement(self):
+        print self.data.path
+        print self.data.length
+
 class data_queue(object):
     def __init__(self, debug=False):
         self.beginning = None
@@ -85,6 +89,91 @@ class data_queue(object):
             return_node.set_right_node(None)
 
         return return_node
+
+    def cull_to_size(self, N):
+        if self.length <= N:
+            pass
+        else:
+            current = self.beginning
+            for i in range(N-1):
+                current = current.right_point
+
+            current.right_point.set_left_node(None)
+            current.right_point = None
+
+    def print_all(self):
+        go = True
+        current = self.beginning
+        while go:
+            if current is not None:
+                current.print_statement()
+                current = current.right_point
+            else:
+                go = False
+
+    @property
+    def length(self):
+        go = True
+        current = self.beginning
+        if current is None:
+            return 0
+        else:
+            count = 1
+        while go:
+            if current.right_point is None:
+                go = False
+            else:
+                current = current.right_point
+                count += 1
+        return count
+
+
+
+class data_sorted_queue(data_queue):
+    "Queue is sorted so that smallest path lens come first"
+    def __init__(self, debug=False, use_length=True, use_heuristic=False, target=None):
+        super(data_sorted_queue, self).__init__()
+        self.target = target
+        self.use_length = use_length
+        self.use_heuristic = use_heuristic
+        if self.use_heuristic:
+            assert not self.target is None
+
+    def add_data_node(self, node_to_add):
+        if (self.ending is None) and (self.beginning is None):
+            # completely empty queue
+            self.beginning = node_to_add
+            self.ending = node_to_add
+
+        else:
+            # different part, search from back as new paths likely longer
+            left_one = self.ending
+            right_one = None
+            go = True
+            while go:
+                left_value = 0
+                new_value = 0
+                if self.use_length:
+                    left_value += left_one.data.length
+                    new_value += node_to_add.data.length
+                if self.use_heuristic:
+                    left_value += left_one.data.heuristic(self.target)
+                    new_value += node_to_add.data.heuristic(self.target)
+                if left_value < new_value:
+                    go = False
+                else:
+                    right_one = left_one
+                    left_one = left_one.left_point
+                if left_one is None:
+                    go = False
+            if left_one is None:
+                self.beginning = node_to_add
+                right_one.set_left_node(node_to_add)
+            elif right_one is None:
+                self.ending = node_to_add
+                left_one.set_right_node(node_to_add)
+            node_to_add.set_left_node(left_one)
+            node_to_add.set_right_node(right_one)
 
 class data_stack(object):
     def __init__(self, debug=False):
@@ -148,7 +237,6 @@ class path_list(object):
         else:
             return 0
 
-    @property
     def heuristic(self, target):
         length = None
         if self.size > 0:
@@ -358,11 +446,10 @@ def beam_search(graph, start, goal, beam_width):
     best_path = None
 
     # initialize the queue
-    queue = data_queue()
+    queue = data_sorted_queue(use_length=False, use_heuristic=True, target=goal)
     path_object = path_list(graph, [start])
     this = data_node(path_object)
     queue.add_data_node(this)
-    next_up = queue.get_next()
     if start == goal:
         best_path = path_object
         go = False
@@ -370,34 +457,50 @@ def beam_search(graph, start, goal, beam_width):
         go = True
 
     # begin iterating
+    new_queue = queue
     while go:
-        old_path_object = next_up.data #path_list object
-        old_path = old_path_object.path #list of nodes forthe path
-        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
-        for connection in next_connections:
-            if connection == goal:
-                old_path_object.add_next_node(connection)
-                if best_path is None:
-                    best_path = old_path_object
-                else:
-                    if best_path.length > old_path_object.length:
-                        best_path = old_path_object
-            else:
-                if not connection in old_path: #only do if no repeat
-                    next_path = copy.copy(old_path)
-                    next_path.append(connection)
-                    if not isinstance(next_path, list):
-                        print next_path
-                        raise Exception
-                    path_object = path_list(graph, next_path)
-                    this = data_node(path_object)
-                    queue.add_data_node(this)
-
-        # check if next thing is empty. If so, terminate loop, else keep searching
-        next_up = queue.get_next()
+        old_queue = new_queue
+        new_queue = data_sorted_queue(use_length=False, use_heuristic=True, target=goal)
+        next_up = old_queue.get_next()
         if next_up is None:
+            inner_go = False
             go = False
+        else:
+            inner_go = True
+        while inner_go:
+            old_path_object = next_up.data #path_list object
+            old_path = old_path_object.path #list of nodes forthe path
+            next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+            for connection in next_connections:
+                if connection == goal:
+                    go = False
+                    old_path_object.add_next_node(connection)
+                    if best_path is None:
+                        best_path = old_path_object
+                    else:
+                        if best_path.length > old_path_object.length:
+                            best_path = old_path_object
+                else:
+                    if not connection in old_path: #only do if no repeat
+                        next_path = copy.copy(old_path)
+                        next_path.append(connection)
+                        if not isinstance(next_path, list):
+                            print next_path
+                            raise Exception
+                        path_object = path_list(graph, next_path)
+                        this = data_node(path_object)
+                        new_queue.add_data_node(this)
 
+            # check if next thing is empty. If so, terminate loop, else keep searching
+            next_up = old_queue.get_next()
+            if next_up is None:
+                inner_go = False
+        # now remove connections from new_queue until you get to beam_width
+        print "starting: %d" % beam_width
+        new_queue.print_all()
+        new_queue.cull_to_size(beam_width)
+        print "after"
+        new_queue.print_all()
     if best_path is None:
         return []
     else:
@@ -415,8 +518,52 @@ def path_length(graph, node_names):
 
 
 def branch_and_bound(graph, start, goal):
-    raise NotImplementedError
+    best_path = None
 
+    agenda = data_sorted_queue()
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    agenda.add_data_node(this)
+    next_up = agenda.get_next()
+    if start == goal:
+        best_path = path_object
+        go = False
+    else:
+        go = True
+
+    while go:
+        old_path_object = next_up.data #path_list object
+        old_path = old_path_object.path #list of nodes forthe path
+        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+        for connection in next_connections:
+            if connection == goal:
+                go = False
+                old_path_object.add_next_node(connection)
+                if best_path is None:
+                    best_path = old_path_object
+                else:
+                    if best_path.length > old_path_object.length:
+                        best_path = old_path_object
+            else:
+                if not connection in old_path: #only do if no repeat
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
+                    this = data_node(path_object)
+                    agenda.add_data_node(this)
+
+        # check if next thing is empty. If so, terminate loop, else keep searching
+        next_up = agenda.get_next()
+        if next_up is None:
+            go = False
+
+    if best_path is None:
+        return []
+    else:
+        return best_path.path
 def a_star(graph, start, goal):
     raise NotImplementedError
 
