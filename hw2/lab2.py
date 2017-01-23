@@ -56,6 +56,10 @@ class data_node(object):
         print self.data.path
         print self.data.length
 
+    def print_heuristic_statement(self, target):
+        print self.data.path
+        print self.data.heuristic(target)
+
 class data_queue(object):
     def __init__(self, debug=False):
         self.beginning = None
@@ -168,13 +172,24 @@ class data_sorted_queue(data_queue):
                     go = False
             if left_one is None:
                 self.beginning = node_to_add
-                right_one.set_left_node(node_to_add)
             elif right_one is None:
                 self.ending = node_to_add
+            if not right_one is None:
+                right_one.set_left_node(node_to_add)
+            if not left_one is None:
                 left_one.set_right_node(node_to_add)
             node_to_add.set_left_node(left_one)
             node_to_add.set_right_node(right_one)
 
+    def print_all_heuristic(self, target):
+            go = True
+            current = self.beginning
+            while go:
+                if current is not None:
+                    current.print_heuristic_statement(target)
+                    current = current.right_point
+                else:
+                    go = False
 class data_stack(object):
     def __init__(self, debug=False):
         self.beginning = None
@@ -232,6 +247,7 @@ class path_list(object):
                 if self.graph.are_connected(start, end):
                     length += self.graph.get_edge(start, end).length
                 else:
+                    print self.path
                     raise IOError("Given path is invalid, some nodes not connected")
             return length
         else:
@@ -277,12 +293,17 @@ def bfs(graph, start, goal, debug=False, optimal=False):
             if connection == goal:
                 if not optimal:
                     go = False
-                old_path_object.add_next_node(connection)
+                next_path = copy.copy(old_path)
+                next_path.append(connection)
+                if not isinstance(next_path, list):
+                    print next_path
+                    raise Exception
+                path_object = path_list(graph, next_path)
                 if best_path is None:
-                    best_path = old_path_object
+                    best_path = path_object
                 else:
-                    if best_path.length > old_path_object.length:
-                        best_path = old_path_object
+                    if best_path.length > this.length:
+                        best_path = path_object
             else:
                 if not connection in old_path: #only do if no repeat
                     next_path = copy.copy(old_path)
@@ -331,12 +352,17 @@ def dfs(graph, start, goal, debug=False, optimal=False):
             if connection == goal:
                 if not optimal:
                     go = False
-                old_path_object.add_next_node(connection)
+                next_path = copy.copy(old_path)
+                next_path.append(connection)
+                if not isinstance(next_path, list):
+                    print next_path
+                    raise Exception
+                path_object = path_list(graph, next_path)
                 if best_path is None:
-                    best_path = old_path_object
+                    best_path = path_object
                 else:
-                    if best_path.length > old_path_object.length:
-                        best_path = old_path_object
+                    if best_path.length > this.length:
+                        best_path = path_object
             else:
                 if not connection in old_path: #only do if no repeat
                     next_path = copy.copy(old_path)
@@ -405,12 +431,17 @@ def hill_climbing(graph, start, goal, debug=False, optimal=False):
             if connection == goal:
                 if not optimal:
                     go = False
-                old_path_object.add_next_node(connection)
+                next_path = copy.copy(old_path)
+                next_path.append(connection)
+                if not isinstance(next_path, list):
+                    print next_path
+                    raise Exception
+                path_object = path_list(graph, next_path)
                 if best_path is None:
-                    best_path = old_path_object
+                    best_path = path_object
                 else:
-                    if best_path.length > old_path_object.length:
-                        best_path = old_path_object
+                    if best_path.length > this.length:
+                        best_path = path_object
             else:
                 if not connection in old_path: #only do if no repeat
                     next_path = copy.copy(old_path)
@@ -474,12 +505,17 @@ def beam_search(graph, start, goal, beam_width):
             for connection in next_connections:
                 if connection == goal:
                     go = False
-                    old_path_object.add_next_node(connection)
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
                     if best_path is None:
-                        best_path = old_path_object
+                        best_path = path_object
                     else:
-                        if best_path.length > old_path_object.length:
-                            best_path = old_path_object
+                        if best_path.length > this.length:
+                            best_path = path_object
                 else:
                     if not connection in old_path: #only do if no repeat
                         next_path = copy.copy(old_path)
@@ -490,17 +526,12 @@ def beam_search(graph, start, goal, beam_width):
                         path_object = path_list(graph, next_path)
                         this = data_node(path_object)
                         new_queue.add_data_node(this)
-
             # check if next thing is empty. If so, terminate loop, else keep searching
             next_up = old_queue.get_next()
             if next_up is None:
                 inner_go = False
         # now remove connections from new_queue until you get to beam_width
-        print "starting: %d" % beam_width
-        new_queue.print_all()
         new_queue.cull_to_size(beam_width)
-        print "after"
-        new_queue.print_all()
     if best_path is None:
         return []
     else:
@@ -538,12 +569,17 @@ def branch_and_bound(graph, start, goal):
         for connection in next_connections:
             if connection == goal:
                 go = False
-                old_path_object.add_next_node(connection)
+                next_path = copy.copy(old_path)
+                next_path.append(connection)
+                if not isinstance(next_path, list):
+                    print next_path
+                    raise Exception
+                path_object = path_list(graph, next_path)
                 if best_path is None:
-                    best_path = old_path_object
+                    best_path = path_object
                 else:
-                    if best_path.length > old_path_object.length:
-                        best_path = old_path_object
+                    if best_path.length > this.length:
+                        best_path = path_object
             else:
                 if not connection in old_path: #only do if no repeat
                     next_path = copy.copy(old_path)
@@ -565,7 +601,68 @@ def branch_and_bound(graph, start, goal):
     else:
         return best_path.path
 def a_star(graph, start, goal):
-    raise NotImplementedError
+    best_path = None
+    extended_set = [start]
+    agenda = data_sorted_queue(use_length=True, use_heuristic=True, target=goal)
+    path_object = path_list(graph, [start])
+    this = data_node(path_object)
+    agenda.add_data_node(this)
+    next_up = agenda.get_next()
+    if start == goal:
+        best_path = path_object
+        go = False
+    else:
+        go = True
+
+    while go:
+        old_path_object = next_up.data #path_list object
+        old_path = old_path_object.path #list of nodes forthe path
+        current_node_to_see = old_path[old_path_object.last_idx]
+        next_connections = graph.get_connected_nodes(old_path[old_path_object.last_idx])
+        for connection in next_connections:
+            if connection == goal:
+                go = False
+                next_path = copy.copy(old_path)
+                next_path.append(connection)
+                if not isinstance(next_path, list):
+                    print next_path
+                    raise Exception
+                path_object = path_list(graph, next_path)
+                if best_path is None:
+                    best_path = path_object
+                else:
+                    if best_path.length > this.length:
+                        best_path = path_object
+            else:
+                if not connection in extended_set:
+                    #only do if not in extended_set
+                    #checking if repeat in path is redundant
+                    try:
+                        assert graph.are_connected(old_path[-1],connection)
+                    except:
+                        print current_node_to_see
+                        print old_path
+                        print next_connections
+                        print connection
+                    extended_set.append(connection)
+                    next_path = copy.copy(old_path)
+                    next_path.append(connection)
+                    if not isinstance(next_path, list):
+                        print next_path
+                        raise Exception
+                    path_object = path_list(graph, next_path)
+                    this = data_node(path_object)
+                    agenda.add_data_node(this)
+
+        # check if next thing is empty. If so, terminate loop, else keep searching
+        next_up = agenda.get_next()
+        if next_up is None:
+            go = False
+
+    if best_path is None:
+        return []
+    else:
+        return best_path.path
 
 
 ## It's useful to determine if a graph has a consistent and admissible
@@ -574,11 +671,32 @@ def a_star(graph, start, goal):
 ## consistent, but not admissible?
 
 def is_admissible(graph, goal):
-    raise NotImplementedError
+    admissable = True
+    for node in graph.nodes:
+        path = branch_and_bound(graph, node, goal)
+        path_obj = path_list(graph, path)
+        if path_obj.length < graph.get_heuristic(node, goal):
+            admissable = False
+            break
+    return admissable
 
 def is_consistent(graph, goal):
-    raise NotImplementedError
+    consistent = True
+    found_edges = False
+    for edge in graph.edges:
+        found_edges = True
+        h1 = graph.get_heuristic(edge.node1, goal)
+        h2 = graph.get_heuristic(edge.node2, goal)
+        diff = h1-h2
+        if diff < 0:
+            diff *= -1.
+        if diff > edge.length:
+            consistent = False
+            break
+    if not found_edges:
+        print "No edges found"
+    return consistent
 
-HOW_MANY_HOURS_THIS_PSET_TOOK = ''
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+HOW_MANY_HOURS_THIS_PSET_TOOK = 'far too many'
+WHAT_I_FOUND_INTERESTING = 'designing queue and stack classes, making sorted queue, how everything relates'
+WHAT_I_FOUND_BORING = 'very tedious amounts of implementation. Very repetetive at some point'
