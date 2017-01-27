@@ -75,10 +75,12 @@ def focused_evaluate(board):
 
     total = 0
     # for current player
-    for chain in board.chain_cells(current_player):
-        total += len(chain)
-    for chain in board.chain_cells(current_player):
-        total -= len(chain)
+    for sets in board.chain_cells(current_player):
+        for chain in sets:
+            total += len(chain)
+    for chain in list(board.chain_cells(current_player)):
+        for chain in sets:
+            total -= len(chain)
 
     return total
 
@@ -92,13 +94,38 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
 
 ## You can try out your new evaluation function by uncommenting this line:
 #run_game(basic_player, quick_to_win_player)
-
+#run_game(human_player, quick_to_win_player)
 ## Write an alpha-beta-search procedure that acts like the minimax-search
 ## procedure, but uses alpha-beta pruning to avoid searching bad ideas
 ## that can't improve the result. The tester will check your pruning by
 ## counting the number of static evaluations you make.
 ##
 ## You can use minimax() in basicplayer.py as an example.
+def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_fn, best_so_far, gt):
+
+    if is_terminal_fn(depth, board):
+        return eval_fn(board)
+
+    best_val = None
+    give_best_val = best_so_far
+    for move, new_board in get_next_moves_fn(board):
+        val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
+                                            get_next_moves_fn, is_terminal_fn, give_best_val, not gt)
+        #print "depth: %d, val: %d" % (depth,val)
+        if best_val == None or val > best_val:
+            best_val = val
+            give_best_val = -best_val
+
+        if gt:
+            if best_val > best_so_far:
+                #the move is too good for opponent, this branch would never be taken.
+                break
+        else:
+            if best_val < best_so_far:
+                break
+
+    return best_val
+
 def alpha_beta_search(board, depth,
                       eval_fn,
                       # NOTE: You should use get_next_moves_fn when generating
@@ -108,13 +135,31 @@ def alpha_beta_search(board, depth,
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
 		      is_terminal_fn=is_terminal):
-    raise NotImplementedError
+    best_val = None
+    give_best_val = None
+    for move, new_board in get_next_moves_fn(board):
+        val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
+                                            get_next_moves_fn, is_terminal_fn, give_best_val, True)
+
+        if best_val == None or val > best_val[0]:
+            best_val = (val, move, new_board)
+            give_best_val = -best_val[0]
+        #print "ab Possible Move: %d with rating %d" % (move, val)
+    try:
+        print "AlphaBeta: Decided on column %d with rating %d" % (best_val[1], best_val[0])
+    except:
+        print "AlphaBeta, Column:"
+        print best_val[1]
+        print "AlphaBeta, Rating:"
+        print best_val[0]
+
+    return best_val[1]
 
 ## Now you should be able to search twice as deep in the same amount of time.
 ## (Of course, this alpha-beta-player won't work until you've defined
 ## alpha-beta-search.)
 alphabeta_player = lambda board: alpha_beta_search(board,
-                                                   depth=8,
+                                                   depth=4,
                                                    eval_fn=focused_evaluate)
 
 ## This player uses progressive deepening, so it can kick your ass while
@@ -124,6 +169,11 @@ ab_iterative_player = lambda board: \
                         search_fn=alpha_beta_search,
                         eval_fn=focused_evaluate, timeout=5)
 #run_game(human_player, alphabeta_player)
+board = ConnectFourBoard()
+board.do_move(0)
+minimax(board, 4, focused_evaluate)
+alpha_beta_search(board, 4, focused_evaluate)
+
 
 ## Finally, come up with a better evaluation function than focused-evaluate.
 ## By providing a different function, you should be able to beat
@@ -198,8 +248,8 @@ def run_test_tree_search(search, board, depth):
 COMPETE = (None)
 
 ## The standard survey questions.
-HOW_MANY_HOURS_THIS_PSET_TOOK = ""
-WHAT_I_FOUND_INTERESTING = ""
-WHAT_I_FOUND_BORING = ""
-NAME = ""
-EMAIL = ""
+HOW_MANY_HOURS_THIS_PSET_TOOK = "Not Many At All"
+WHAT_I_FOUND_INTERESTING = "It was fun to come up with scoring algorithms"
+WHAT_I_FOUND_BORING = "Nothing, this one was short and sweet"
+NAME = "Justin"
+EMAIL = "wouldn't you like to know"

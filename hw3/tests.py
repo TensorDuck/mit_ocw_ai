@@ -74,7 +74,7 @@ make_test(type = 'FUNCTION',
           expected_val = "3",
           name = 'run_test_search'
           )
-    
+
 def run_test_search_3_getargs():
     return [ 'alpha_beta_search', 'WINNING_BOARD', 2, 'focused_evaluate' ]
 
@@ -281,7 +281,7 @@ def run_test_game_1_getargs():
 def run_test_game_1_testanswer(val, original_val = None):
     wins = 0
     losses = 0
-    
+
     if val[0] == 1:
         wins += 1
     elif val[0] == 2:
@@ -301,7 +301,7 @@ def run_test_game_1_testanswer(val, original_val = None):
         wins += 1
     elif val[3] == 1:
         losses += 1
-        
+
     return ( wins - losses >= 2 )
 
 # Set this if-guard to False to temporarily disable this test.
@@ -360,4 +360,3 @@ make_test(type = 'VALUE',
           expected_val = "[a number of hours]",
           name = WHAT_I_FOUND_BORING_getargs
           )
-
