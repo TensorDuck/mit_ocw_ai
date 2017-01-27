@@ -109,14 +109,18 @@ def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_
     best_val = None
     give_best_val = best_so_far
     for move, new_board in get_next_moves_fn(board):
+        if gt is None:
+            pass_on_gt = None
+        else:
+            pass_on_gt = not gt
         val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
-                                            get_next_moves_fn, is_terminal_fn, give_best_val, not gt)
+                                            get_next_moves_fn, is_terminal_fn, give_best_val, pass_on_gt)
         #print "depth: %d, val: %d" % (depth,val)
         if best_val == None or val > best_val:
             best_val = val
             give_best_val = -best_val
-
-        if gt:
+            gt = True
+        if (gt is None) or gt:
             if best_val > best_so_far:
                 #the move is too good for opponent, this branch would never be taken.
                 break
@@ -137,13 +141,15 @@ def alpha_beta_search(board, depth,
 		      is_terminal_fn=is_terminal):
     best_val = None
     give_best_val = None
+    gt = None
     for move, new_board in get_next_moves_fn(board):
         val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
-                                            get_next_moves_fn, is_terminal_fn, give_best_val, True)
+                                            get_next_moves_fn, is_terminal_fn, give_best_val, gt)
 
         if best_val == None or val > best_val[0]:
             best_val = (val, move, new_board)
             give_best_val = -best_val[0]
+            gt = True
         #print "ab Possible Move: %d with rating %d" % (move, val)
     try:
         print "AlphaBeta: Decided on column %d with rating %d" % (best_val[1], best_val[0])
@@ -159,7 +165,7 @@ def alpha_beta_search(board, depth,
 ## (Of course, this alpha-beta-player won't work until you've defined
 ## alpha-beta-search.)
 alphabeta_player = lambda board: alpha_beta_search(board,
-                                                   depth=4,
+                                                   depth=8,
                                                    eval_fn=focused_evaluate)
 
 ## This player uses progressive deepening, so it can kick your ass while
