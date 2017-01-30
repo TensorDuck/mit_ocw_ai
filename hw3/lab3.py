@@ -77,10 +77,10 @@ def focused_evaluate(board):
     # for current player
     for sets in board.chain_cells(current_player):
         for chain in sets:
-            total += len(chain)
-    for chain in list(board.chain_cells(current_player)):
+            total += len(chain) ** 2
+    for chain in list(board.chain_cells(other_player)):
         for chain in sets:
-            total -= len(chain)
+            total -= len(chain) ** 2
 
     return total
 
@@ -102,12 +102,10 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
 ##
 ## You can use minimax() in basicplayer.py as an example.
 def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta, max_lvl):
-
+    best_val = None
     if is_terminal_fn(depth, board):
         return eval_fn(board)
 
-    best_val = None
-    give_best_val = best_so_far
     for move, new_board in get_next_moves_fn(board):
         val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
                                             get_next_moves_fn, is_terminal_fn, alpha, beta, not max_lvl)
@@ -115,19 +113,24 @@ def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_
         if best_val == None or val > best_val:
             best_val = val
         if max_lvl:
-	    alpha = best_val
+            alpha = best_val
         else:
-	    beta = best_val
-	
-	if (alpha is None) or (beta is None):
-	    #has not yet found both bounds, so anything goes!
-	    pass
-	elif (alpha+beta) >= 0:
-            #if alpha is maximum score assured
-	    #-beta is minimum score assured
-            #Break if the minimum score assured is less than max assured score
-            break
-	
+            beta = best_val
+
+        try:
+            if (alpha is None) or (beta is None):
+                #has not yet found both bounds, so anything goes!
+                pass
+            elif alpha + beta >= 0:
+                #if alpha is maximum score assured
+                #-beta is minimum score assured
+                #Break if the minimum score assured is less than max assured score
+                break
+        except:
+            print alpha
+            print beta
+            raise
+
 
     return best_val
 
@@ -139,9 +142,8 @@ def alpha_beta_search(board, depth,
                       # The default functions set here will work
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
-		      is_terminal_fn=is_terminal):
+                      is_terminal_fn=is_terminal, verbose=True):
     best_val = None
-    give_best_val = None
     alpha = None
     beta = None
     for move, new_board in get_next_moves_fn(board):
@@ -150,15 +152,16 @@ def alpha_beta_search(board, depth,
 
         if best_val == None or val > best_val[0]:
             best_val = (val, move, new_board)
-            alpha = best_val
+            alpha = best_val[0]
         #print "ab Possible Move: %d with rating %d" % (move, val)
-    try:
-        print "AlphaBeta: Decided on column %d with rating %d" % (best_val[1], best_val[0])
-    except:
-        print "AlphaBeta, Column:"
-        print best_val[1]
-        print "AlphaBeta, Rating:"
-        print best_val[0]
+    if verbose:
+        try:
+            print "AlphaBeta: Decided on column %d with rating %d" % (best_val[1], best_val[0])
+        except:
+            print "AlphaBeta, Column:"
+            print best_val[1]
+            print "AlphaBeta, Rating:"
+            print best_val[0]
 
     return best_val[1]
 
@@ -176,10 +179,10 @@ ab_iterative_player = lambda board: \
                         search_fn=alpha_beta_search,
                         eval_fn=focused_evaluate, timeout=5)
 #run_game(human_player, alphabeta_player)
-board = ConnectFourBoard()
-board.do_move(0)
-minimax(board, 4, focused_evaluate)
-alpha_beta_search(board, 4, focused_evaluate)
+#board = ConnectFourBoard()
+#board.do_move(0)
+#minimax(board, 4, focused_evaluate)
+#alpha_beta_search(board, 4, focused_evaluate)
 
 
 ## Finally, come up with a better evaluation function than focused-evaluate.
@@ -187,11 +190,156 @@ alpha_beta_search(board, 4, focused_evaluate)
 ## simple-evaluate (or focused-evaluate) while searching to the
 ## same depth.
 
+def check_free(board, chain):
+    #checks if there is open space around
+    if len(chain) == 1:
+        x_start = chain[0][0]
+        y_start = chain[0][1]
+        # check if it's got 3 spaces above
+        vector_y = -1
+        empty = True
+        for i in range(3):
+            new_y = y_start + (i*vector_y)
+            if new_y > 5 or new_y < 0:
+                empty = False
+            else:
+                if board.get_cell(x_start, new_y) != 0:
+                    empty = False
+        if empty:  # its atleast empty above completely
+            return 1
+
+        #it does not have 4 spaces above then maybe 4 spaces to the side
+        vector_x = 1
+        check_idxs = []
+        check = [True, True, True, True, True, True]
+        for i in range(-3,0):
+            check_idxs.append((x_start + (i*vector_x), y_start))
+        for i in range(1,4):
+            check_idxs.append((x_start + (i*vector_x), y_start))
+        for i in range(6):
+            x_idx = check_idxs[i][0]
+            y_idx = check_idxs[i][1]
+            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
+                check[i] = False
+            else:
+                if board.get_cell(x_idx, y_idx) != 0:
+                    check[i] == False
+        use = []
+        for i in range(4):
+            use.append(check[i] and check[i+1] and check[i+2])
+        if True in use:
+            return 1
+
+        #it does not have 4 spaces above then maybe 4 spaces diagonally somewhere
+        vector_x = 1
+        vector_y = -1
+        check_idxs = []
+        check = [True, True, True]
+        for i in range(1,4):
+            check_idxs.append((x_start + (i*vector_x), y_start + (i*vector_y)))
+        for i in range(3):
+            x_idx = check_idxs[i][0]
+            y_idx = check_idxs[i][1]
+            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
+                check[i] = False
+            else:
+                if board.get_cell(x_idx, y_idx) != 0:
+                    check[i] == False
+        empty = check[0] and check[1] and check[2]
+        if empty:
+            return 1
+
+        #it does not have 4 spaces above then maybe 4 spaces diagonally somewhere
+        vector_x = -1
+        vector_y = -1
+        check_idxs = []
+        check = [True, True, True]
+        for i in range(1,4):
+            check_idxs.append((x_start + (i*vector_x), y_start + (i*vector_y)))
+        for i in range(3):
+            x_idx = check_idxs[i][0]
+            y_idx = check_idxs[i][1]
+            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
+                check[i] = False
+            else:
+                if board.get_cell(x_idx, y_idx) != 0:
+                    check[i] == False
+        empty = check[0] and check[1] and check[2]
+        if empty:
+            return 1
+
+        return 0
+    if len(chain) == 2:
+        vector_x = chain[0][0] - chain[1][0]
+        vector_y = chain[0][1] - chain[1][0]
+        check = [True, True, True, True]
+        check_idxs = []
+        for i in range(-2,0):
+            check_idxs.append((chain[0][0] + (i*vector_x), chain[0][1] + (i*vector_y)))
+        for i in range(1,3):
+            check_idxs.append((chain[1][0] + (i*vector_x), chain[1][1] + (i*vector_y)))
+        for i in range(4):
+            x_idx = check_idxs[i][0]
+            y_idx = check_idxs[i][1]
+            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
+                check[i] = False
+            else:
+                if board.get_cell(x_idx, y_idx) != 0:
+                    check[i] == False
+        use = []
+        for i in range(3):
+            use.append(check[i] and check[i+1])
+        if True in use:
+            return 2
+        else:
+            return 0
+
+    if len(chain) == 3:
+        vector_x = chain[0][0] - chain[1][0]
+        vector_y = chain[0][1] - chain[1][0]
+        check = [True, True]
+        check_idxs = []
+        check_idxs.append((chain[2][0] + vector_x, chain[2][1] + vector_y))
+        check_idxs.append((chain[0][0] - vector_x, chain[0][1] - vector_y))
+        for i in range(2):
+            x_idx = check_idxs[i][0]
+            y_idx = check_idxs[i][1]
+            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
+                check[i] = False
+            else:
+                if board.get_cell(x_idx, y_idx) != 0:
+                    check[i] == False
+        if True in check:
+            return 3
+        else:
+            return 0
+
+    return 0
+
+
 def better_evaluate(board):
-    raise NotImplementedError
+    current_player = board.get_current_player_id()
+    other_player = board.get_other_player_id()
+
+    if board.longest_chain(current_player) == 4:
+        return 1000
+    if board.longest_chain(other_player) == 4:
+        return -1000
+
+    total = 0
+    # for current player
+    for chain in list(board.chain_cells(current_player)):
+        chain_length = check_free(board, chain)
+        total += chain_length ** 2
+
+    for chain in list(board.chain_cells(other_player)):
+        chain_length = check_free(board, chain)
+        total -= chain_length ** 2
+
+    return total
 
 # Comment this line after you've fully implemented better_evaluate
-better_evaluate = memoize(basic_evaluate)
+#better_evaluate = memoize(basic_evaluate)
 
 # Uncomment this line to make your better_evaluate run faster.
 # better_evaluate = memoize(better_evaluate)
