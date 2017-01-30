@@ -330,10 +330,14 @@ def better_evaluate(board):
     # for current player
     for chain in list(board.chain_cells(current_player)):
         chain_length = check_free(board, chain)
+        if chain_length == 3:
+            total += 100
         total += chain_length ** 2
 
     for chain in list(board.chain_cells(other_player)):
         chain_length = check_free(board, chain)
+        if chain_length == 3:
+            total -= 100
         total -= chain_length ** 2
 
     return total
@@ -400,7 +404,7 @@ def run_test_tree_search(search, board, depth):
 ## Do you want us to use your code in a tournament against other students? See
 ## the description in the problem set. The tournament is completely optional
 ## and has no effect on your grade.
-COMPETE = (None)
+COMPETE = (True) # if only I could :(
 
 ## The standard survey questions.
 HOW_MANY_HOURS_THIS_PSET_TOOK = "Not Many At All"
