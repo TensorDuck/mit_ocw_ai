@@ -101,7 +101,7 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
 ## counting the number of static evaluations you make.
 ##
 ## You can use minimax() in basicplayer.py as an example.
-def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_fn, best_so_far, gt):
+def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta, max_lvl):
 
     if is_terminal_fn(depth, board):
         return eval_fn(board)
@@ -109,24 +109,25 @@ def alpha_beta_find_value(board, depth, eval_fn, get_next_moves_fn, is_terminal_
     best_val = None
     give_best_val = best_so_far
     for move, new_board in get_next_moves_fn(board):
-        if gt is None:
-            pass_on_gt = None
-        else:
-            pass_on_gt = not gt
         val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
-                                            get_next_moves_fn, is_terminal_fn, give_best_val, pass_on_gt)
+                                            get_next_moves_fn, is_terminal_fn, alpha, beta, not max_lvl)
         #print "depth: %d, val: %d" % (depth,val)
         if best_val == None or val > best_val:
             best_val = val
-            give_best_val = -best_val
-            gt = True
-        if (gt is None) or gt:
-            if best_val > best_so_far:
-                #the move is too good for opponent, this branch would never be taken.
-                break
+        if max_lvl:
+	    alpha = best_val
         else:
-            if best_val < best_so_far:
-                break
+	    beta = best_val
+	
+	if (alpha is None) or (beta is None):
+	    #has not yet found both bounds, so anything goes!
+	    pass
+	elif (alpha+beta) >= 0:
+            #if alpha is maximum score assured
+	    #-beta is minimum score assured
+            #Break if the minimum score assured is less than max assured score
+            break
+	
 
     return best_val
 
@@ -141,15 +142,15 @@ def alpha_beta_search(board, depth,
 		      is_terminal_fn=is_terminal):
     best_val = None
     give_best_val = None
-    gt = None
+    alpha = None
+    beta = None
     for move, new_board in get_next_moves_fn(board):
         val = -1 * alpha_beta_find_value(new_board, depth-1, eval_fn,
-                                            get_next_moves_fn, is_terminal_fn, give_best_val, gt)
+                                            get_next_moves_fn, is_terminal_fn, alpha, beta, False)
 
         if best_val == None or val > best_val[0]:
             best_val = (val, move, new_board)
-            give_best_val = -best_val[0]
-            gt = True
+            alpha = best_val
         #print "ab Possible Move: %d with rating %d" % (move, val)
     try:
         print "AlphaBeta: Decided on column %d with rating %d" % (best_val[1], best_val[0])
