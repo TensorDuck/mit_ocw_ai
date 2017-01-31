@@ -193,82 +193,8 @@ ab_iterative_player = lambda board: \
 def check_free(board, chain):
     #checks if there is open space around
     if len(chain) == 1:
-        x_start = chain[0][0]
-        y_start = chain[0][1]
-        # check if it's got 3 spaces above
-        vector_y = -1
-        empty = True
-        for i in range(3):
-            new_y = y_start + (i*vector_y)
-            if new_y > 5 or new_y < 0:
-                empty = False
-            else:
-                if board.get_cell(x_start, new_y) != 0:
-                    empty = False
-        if empty:  # its atleast empty above completely
-            return 1
-
-        #it does not have 4 spaces above then maybe 4 spaces to the side
-        vector_x = 1
-        check_idxs = []
-        check = [True, True, True, True, True, True]
-        for i in range(-3,0):
-            check_idxs.append((x_start + (i*vector_x), y_start))
-        for i in range(1,4):
-            check_idxs.append((x_start + (i*vector_x), y_start))
-        for i in range(6):
-            x_idx = check_idxs[i][0]
-            y_idx = check_idxs[i][1]
-            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
-                check[i] = False
-            else:
-                if board.get_cell(x_idx, y_idx) != 0:
-                    check[i] == False
-        use = []
-        for i in range(4):
-            use.append(check[i] and check[i+1] and check[i+2])
-        if True in use:
-            return 1
-
-        #it does not have 4 spaces above then maybe 4 spaces diagonally somewhere
-        vector_x = 1
-        vector_y = -1
-        check_idxs = []
-        check = [True, True, True]
-        for i in range(1,4):
-            check_idxs.append((x_start + (i*vector_x), y_start + (i*vector_y)))
-        for i in range(3):
-            x_idx = check_idxs[i][0]
-            y_idx = check_idxs[i][1]
-            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
-                check[i] = False
-            else:
-                if board.get_cell(x_idx, y_idx) != 0:
-                    check[i] == False
-        empty = check[0] and check[1] and check[2]
-        if empty:
-            return 1
-
-        #it does not have 4 spaces above then maybe 4 spaces diagonally somewhere
-        vector_x = -1
-        vector_y = -1
-        check_idxs = []
-        check = [True, True, True]
-        for i in range(1,4):
-            check_idxs.append((x_start + (i*vector_x), y_start + (i*vector_y)))
-        for i in range(3):
-            x_idx = check_idxs[i][0]
-            y_idx = check_idxs[i][1]
-            if x_idx < 0 or x_idx > 5 or y_idx < 0 or y_idx > 6:
-                check[i] = False
-            else:
-                if board.get_cell(x_idx, y_idx) != 0:
-                    check[i] == False
-        empty = check[0] and check[1] and check[2]
-        if empty:
-            return 1
-
         return 0
+
     if len(chain) == 2:
         vector_x = chain[0][0] - chain[1][0]
         vector_y = chain[0][1] - chain[1][0]
@@ -332,14 +258,18 @@ def better_evaluate(board):
         chain_length = check_free(board, chain)
         if chain_length == 3:
             total += 100
-        total += chain_length ** 2
+        total += chain_length
 
     for chain in list(board.chain_cells(other_player)):
         chain_length = check_free(board, chain)
         if chain_length == 3:
             total -= 100
-        total -= chain_length ** 2
-
+        total -= chain_length
+    # ensure you don't override winning or losing
+    if total >= 1000:
+        total = 999
+    if total <= -1000:
+        total = -999
     return total
 
 # Comment this line after you've fully implemented better_evaluate
