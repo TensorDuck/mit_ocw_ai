@@ -141,7 +141,7 @@ def euclidean_distance_3_getargs():
 
 def euclidean_distance_3_testanswer(val, original_val = None):
     return len(val) == 30 and all([validate_euclidean_distance(list1, list2, ans) for (ans, (list1, list2)) in zip(val, original_val) ])
-                                  
+
 
 def disorder_1_getargs():
     return [ ['Democrat','Democrat','Democrat'], ['Republican',"Republican"]]
@@ -249,5 +249,3 @@ make_test(type = 'VALUE',
           expected_val = "95 or larger",
           name = old_senator_classified_getargs
           )
-
-
