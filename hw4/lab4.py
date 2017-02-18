@@ -224,15 +224,15 @@ def limited_house_classifier(house_people, house_votes, n, verbose = False):
 
 ## Find a value of n that classifies at least 430 representatives correctly.
 ## Hint: It's not 10.
-N_1 = 10
+N_1 = 540
 rep_classified = limited_house_classifier(house_people, house_votes, N_1)
 
 ## Find a value of n that classifies at least 90 senators correctly.
-N_2 = 10
+N_2 = 70
 senator_classified = limited_house_classifier(senate_people, senate_votes, N_2)
 
 ## Now, find a value of n that classifies at least 95 of last year's senators correctly.
-N_3 = 10
+N_3 = 50
 old_senator_classified = limited_house_classifier(last_senate_people, last_senate_votes, N_3)
 
 
