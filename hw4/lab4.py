@@ -134,8 +134,13 @@ senate_group1, senate_group2 = crosscheck_groups(senate_people)
 ## computes Hamming distances.
 
 def euclidean_distance(list1, list2):
-    # this is not the right solution!
-    return hamming_distance(list1, list2)
+    total = 0
+    assert len(list1) == len(list2)
+    num_terms = len(list1)
+    for i in range(num_terms):
+        total += (list1[i] - list2[i]) ** 2
+
+    return float(total) ** 0.5
 
 #Once you have implemented euclidean_distance, you can check the results:
 #evaluate(nearest_neighbors(euclidean_distance, 1), senate_group1, senate_group2)
@@ -144,18 +149,53 @@ def euclidean_distance(list1, list2):
 ## deals better with independents. Make a classifier that makes at most 3
 ## errors on the Senate.
 
-my_classifier = nearest_neighbors(hamming_distance, 1)
-#evaluate(my_classifier, senate_group1, senate_group2, verbose=1)
+my_classifier = nearest_neighbors(euclidean_distance, 3)
+#print evaluate(my_classifier, senate_group1, senate_group2, verbose=1)
 
 ### Part 2: ID Trees
 #print CongressIDTree(senate_people, senate_votes, homogeneous_disorder)
 
 ## Now write an information_disorder function to replace homogeneous_disorder,
 ## which should lead to simpler trees.
+import math
+def information_value(set_list):
+    set_list_size = len(set_list)
+    #iterate through list, count how many of each type in value_counts
+    go = True
+    new_list = [val for val in set_list]
+    value_counts = []
+    while go:
+        current_size = len(new_list)
+        current_value = new_list[0]
+        next_list = [val for val in new_list if val != current_value]
+        new_size = len(next_list)
+        diff = current_size - new_size
+        assert diff >= 1
+        value_counts.append(diff)
+        new_list = next_list
+        if len(new_list) == 0:
+            go = False
+    assert sum(value_counts) == set_list_size # didn't miss a term
+    # calculate total entropy
+
+    total_entropy = 0.
+    for value in value_counts:
+        fraction = float(value) / float(set_list_size)
+        total_entropy -= fraction * math.log(fraction,2)
+
+    return total_entropy
 
 def information_disorder(yes, no):
-    return homogeneous_disorder(yes, no)
+    size_yes = float(len(yes))
+    size_no = float(len(no))
+    size_all = float(size_yes + size_no)
+    entropy_yes = information_value(yes)
+    entropy_no = information_value(no)
+    total = ((size_yes/size_all) * entropy_yes) + ((size_no/size_all) * entropy_no)
 
+    return total
+#print information_value(["Democrat", "Republicans"])
+#print CongressIDTree(senate_people, senate_votes, homogeneous_disorder)
 #print CongressIDTree(senate_people, senate_votes, information_disorder)
 #evaluate(idtree_maker(senate_votes, homogeneous_disorder), senate_group1, senate_group2)
 
@@ -197,9 +237,9 @@ old_senator_classified = limited_house_classifier(last_senate_people, last_senat
 
 
 ## The standard survey questions.
-HOW_MANY_HOURS_THIS_PSET_TOOK = ""
-WHAT_I_FOUND_INTERESTING = ""
-WHAT_I_FOUND_BORING = ""
+HOW_MANY_HOURS_THIS_PSET_TOOK = "3 Hours"
+WHAT_I_FOUND_INTERESTING = "It requires more human intuition to setup than I thought"
+WHAT_I_FOUND_BORING = "Nothing, this one was short and sweet"
 
 
 ## This function is used by the tester, please don't modify it!
