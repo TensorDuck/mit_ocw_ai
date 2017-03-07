@@ -391,6 +391,48 @@ def make_neural_net_two_layer():
 
     return net
 
+uppercase_letters = list(string.ascii_uppercase)
+
+def make_neural_net_inputs(n_inputs, n_nodes, current_idx=0):
+    # make input layer with 1 static, and n_inputs dynamic inputs
+    inputs = []
+    static_input = Input("i0", -1.)
+
+    for i in range(n_inputs):
+        inputs.append(Input("i%d"%(i+1), 0.))
+
+    layer_inputs = [x for x in inputs]
+    layer_inputs.append(static_input)
+    for i in range(n_nodes):
+        weights = []
+        node_name = uppercase_letters[current_idx]
+        for j in range(n_inputs):
+            wt_name = "w%d%c" % (j+1, node_name)
+            weights.append(Weight(wt_name, random_weight()))
+        weights.append(Weight("w%c"  % node_name, random_weight()))
+        new_node = Neuron(node_name, layer_inputs, weights)
+        nodes.append(new_node)
+        current_idx += 1
+
+    return static_input, inputs, nodes, current_idx
+
+def make_input_layer(previous_layer, n_nodes, static_input, current_idx, current_nodes):
+    layer_inputs = [x for x in previous_layer]
+    layer_inputs.append(static_input)
+
+    for i in range(n_nodes):
+        weights = []
+        node_name = uppercase_letters[current_idx]
+        for j in range(n_inputs):
+            wt_name = "w%c%c" % (previous_layer[j].get_name(), node_name)
+            weights.append(Weight(wt_name, random_weight()))
+        weights.append(Weight("w%c"  % node_name, random_weight()))
+        new_node = Neuron(node_name, layer_inputs, weights)
+        nodes.append(new_node)
+        current_idx += 1
+
+    return current_nodes, current_idx
+
 def make_neural_net_challenging():
     """
     Design a network that can in-theory solve all 3 problems described in
