@@ -12,7 +12,7 @@ max_iterations = 10000
 
 def neural_net_size_testanswer(val, original_val = None):
     return val <= network_min_size
-
+"""
 make_test(type = 'FUNCTION',
           getargs = lambda: [network_maker_func],
           testanswer = neural_net_size_testanswer,
@@ -107,7 +107,7 @@ make_test(type = 'FUNCTION',
           expected_val = message %("patchy", expected_accuracy),
           name = 'neural_net_tester'
           )
-
+"""
 republican_newspaper_vote_getargs = "republican_newspaper_vote"
 
 def republican_newspaper_vote_testanswer(val, original_val = None):

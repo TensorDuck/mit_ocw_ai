@@ -8,6 +8,7 @@
 
 import math
 import random
+import string
 
 class ValuedElement(object):
     """
@@ -393,7 +394,7 @@ def make_neural_net_two_layer():
 
 uppercase_letters = list(string.ascii_uppercase)
 
-def make_neural_net_inputs(n_inputs, n_nodes, current_idx=0):
+def make_neural_net_inputs(n_inputs, current_idx=0):
     # make input layer with 1 static, and n_inputs dynamic inputs
     inputs = []
     static_input = Input("i0", -1.)
@@ -401,39 +402,38 @@ def make_neural_net_inputs(n_inputs, n_nodes, current_idx=0):
     for i in range(n_inputs):
         inputs.append(Input("i%d"%(i+1), 0.))
 
-    layer_inputs = [x for x in inputs]
-    layer_inputs.append(static_input)
-    for i in range(n_nodes):
-        weights = []
-        node_name = uppercase_letters[current_idx]
-        for j in range(n_inputs):
-            wt_name = "w%d%c" % (j+1, node_name)
-            weights.append(Weight(wt_name, random_weight()))
-        weights.append(Weight("w%c"  % node_name, random_weight()))
-        new_node = Neuron(node_name, layer_inputs, weights)
-        nodes.append(new_node)
-        current_idx += 1
+    return static_input, inputs
 
-    return static_input, inputs, nodes, current_idx
-
-def make_input_layer(previous_layer, n_nodes, static_input, current_idx, current_nodes):
+def make_neuron_layer(previous_layer, n_nodes, static_input, current_idx, current_nodes, verbose=False):
     layer_inputs = [x for x in previous_layer]
     layer_inputs.append(static_input)
-
+    n_inputs = len(previous_layer)
+    this_neuron_layer = []
     for i in range(n_nodes):
         weights = []
         node_name = uppercase_letters[current_idx]
         for j in range(n_inputs):
-            wt_name = "w%c%c" % (previous_layer[j].get_name(), node_name)
+            try:
+                wt_name = "w%c%c" % (previous_layer[j].get_name()[-1], node_name)
+            except:
+                if verobse:
+                    print previous_layer[j].get_name()
+                raise
             weights.append(Weight(wt_name, random_weight()))
         weights.append(Weight("w%c"  % node_name, random_weight()))
         new_node = Neuron(node_name, layer_inputs, weights)
-        nodes.append(new_node)
+        if verbose:
+            print new_node
+            print layer_inputs
+            print weights
+
+        current_nodes.append(new_node)
+        this_neuron_layer.append(new_node)
         current_idx += 1
 
-    return current_nodes, current_idx
+    return current_nodes, current_idx, this_neuron_layer
 
-def make_neural_net_challenging():
+def make_neural_net_challenging(verbose=False):
     """
     Design a network that can in-theory solve all 3 problems described in
     the lab instructions.  Your final network should contain
@@ -442,8 +442,29 @@ def make_neural_net_challenging():
     See 'make_neural_net_basic' for required naming convention for inputs,
     weights, and neurons.
     """
+    n_inputs = 2
+    neurons_in_layer = [4, 1]
+    ## For a 2-2-1 layer architecture:
+    ## Works okay for the challenging data set.
+    ## Gets first (letter L) but only 0.8 accuracy on second (Moat like shape).
+    ## Fails, 0.5 accuracy, for patchy.
 
-    raise NotImplementedError, "Implement me!"
+    ## For a 3-1 or 4-1 layer architecture:
+    ## Works really well and achieves 100% accuracy very quickly for all three shapes
+    static_input, inputs = make_neural_net_inputs(n_inputs)
+    current_idx = 0
+    current_nodes = []
+    last_neuron_layer = inputs
+    for neuron_count in neurons_in_layer:
+        current_nodes, current_idx, last_neuron_layer = make_neuron_layer(last_neuron_layer, neuron_count, static_input, current_idx, current_nodes, verbose=verbose)
+
+    assert len(last_neuron_layer) == 1
+    P = PerformanceElem(last_neuron_layer[0], 0.0)
+    if verbose:
+        print "Number of Nodes: %d" % len(current_nodes)
+    network = Network(P, current_nodes)
+
+    return network
 
 def make_neural_net_with_weights():
     """
@@ -462,7 +483,9 @@ def make_neural_net_with_weights():
     #                  'w2B' : 0.0,
     #                  .... # finish me!
     #
-    raise NotImplementedError, "Implement me!"
+
+    init_weights = {'w1A': -4.209429, 'w2A': 2.616891, 'wA': 1.200663, 'w1B': -2.570526, 'w2B': 4.277779, 'wB': -0.765439, 'w1C': -1.740686, 'w2C': -1.708483, 'wC': -2.334103, 'w1D': -2.474733, 'w2D': -2.427166, 'wD': -4.184034, 'wAE': -9.021444, 'wBE': 8.710531, 'wCE': 3.119269, 'wDE': 6.443342, 'wE': 4.447709}
+
     return make_net_with_init_weights_from_dict(make_neural_net_challenging,
                                                 init_weights)
 

@@ -34,9 +34,14 @@ house_1796_votes = read_vote_data('H004desc.csv')
 
 boost_1796 = BoostClassifier(make_vote_classifiers(house_1796_votes),
                              house_1796, standardPartyClassifier)
+# standardPartyClassifier returns 1 if Republican, -1 Otherwise.
 
 # You will need to train it, however. You can change the number of steps here.
-boost_1796.train(20)
+boost_1796.train(100)
+
+#for cas in boost_1796.classifiers:
+#    if "NEWSPAPERS;" in cas.__str__().strip().split():
+#        print cas
 
 # Once you have run your boosting classifier for a sufficient number of steps
 # on the 4th House of Representatives data, it should tell you how it believes
@@ -44,7 +49,7 @@ boost_1796.train(20)
 # does it predict a Republican would vote on the amendment to require
 # "newspapers to be sufficiently dried before mailing"? ('yes' or 'no')
 
-republican_newspaper_vote = 'answer yes or no'
+republican_newspaper_vote = 'no'
 
 # In the 4th House of Representatives, which five representatives were
 # misclassified the most while training your boost classifier?
@@ -53,6 +58,7 @@ republican_newspaper_vote = 'answer yes or no'
 # It should return five names of legislators, in the format that comes from
 # the legislator_info function. The tests will check the function, not just
 # its output in this case.
+import numpy as np
 
 def most_misclassified(classifier, n=5):
     """
@@ -69,7 +75,15 @@ def most_misclassified(classifier, n=5):
 	returns: list of data points (each passed through legislator_info) that were
 			 misclassified most often
     """
-    raise NotImplementedError
+
+    sort_low_to_high = np.argsort(classifier.data_weights)
+
+    misclass = []
+    for i in range(n):
+        idx = sort_low_to_high[-(i+1)]
+        misclass.append(legislator_info(classifier.data[idx]))
+
+    return misclass
 
 # The following line is used by the tester; please leave it in place!
 most_misclassified_boost_1796 = lambda n: most_misclassified(boost_1796, n)
@@ -83,7 +97,14 @@ most_misclassified_boost_1796 = lambda n: most_misclassified(boost_1796, n)
 boost = BoostClassifier(make_vote_classifiers(senate_votes), senate_people,
   standardPartyClassifier)
 boost.train(20)
-republican_sunset_vote = 'answer yes or no'
+
+print "ANALYZING MODERN SENATE"
+#for cas in boost.classifiers:
+#    if "sunset" in cas.__str__().strip().split():
+#        print cas
+#raise
+
+republican_sunset_vote = 'no'
 
 # Which five Senators are the most misclassified after training your
 # classifier? (Again, the tester will test the function, not the answer you
@@ -210,33 +231,33 @@ if __name__ == "__main__":
 
 # For the vampire dataset, what variable does the id tree query, that our
 # algorithm in class did not?
-vampires_idtree_odd = "one of: shadow garlic complexion accent"
+vampires_idtree_odd = "accent"
 
 # For the vampire dataset, which classifier does the worst when tested on just
 # the data on which it was trained?
-vampires_worst_on_training = 'one of: maj dt knn svml svmp3 svmr svms nb'
+vampires_worst_on_training = 'svmr'
 # Is it actually doing badly, or is it just confused?
 
 # For the vampire dataset, which classifier does the worst when cross-validated?
-vampires_worst_on_test = 'one of: maj dt knn svml svmp3 svmr svms nb'
+vampires_worst_on_test = 'svmr'
 
 
 # Which of the above classifiers has the best Brier distance to the true answers
 # in ten-fold cross-validation for the H004 dataset?
 
-best_brier_for_h004 = 'one of: maj dt knn svml svmp3 svmr svms nb'
+best_brier_for_h004 = 'maj'
 
 # Just looking at the confusion matrices, what is the minimum number
 # of data points that must have been differently classified between
 # the best classifier and the second-best classifier for the H004 data
 # set?
 
-min_disagreement_h004 = None
+min_disagreement_h004 = 2
 
 # Which bill was the most divisive along party lines in the H004 data
 # set, according to the classification tree (id tree)?
 
-most_divisive_h004 = 'a bill number'
+most_divisive_h004 = '2'
 
 
 

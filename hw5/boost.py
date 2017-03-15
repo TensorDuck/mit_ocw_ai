@@ -143,7 +143,7 @@ class BoostClassifier(Classifier):
         correct class for a data point.
         """
         self.base_classifiers = base_classifiers
-        self.data = data 
+        self.data = data
         self.data_weights = [1.0/len(data) for d in data]
         self.classifiers = []
         self.standard = standard
@@ -161,7 +161,15 @@ class BoostClassifier(Classifier):
 
         returns: int (+1 or -1)
         """
-        # Fill me in! (the answer given is not correct!)
+
+        total = 0.
+        if not len(self.classifiers) == 0:
+            for brain in self.classifiers:
+                total += brain[0].classify(obj) * brain[1]
+        if total >= 0:
+            return 1
+        else:
+            return -1
         return 1
 
     def orange_classify(self, obj):
@@ -177,7 +185,9 @@ class BoostClassifier(Classifier):
 
         returns: float (between 0 and 1)
         """
-        # Fill me in! (the answer given is not correct!)
+        value = self.classify(obj)
+        if value == -1:
+            return 0
         return 1
 
     def best_classifier(self):
@@ -266,8 +276,20 @@ class BoostClassifier(Classifier):
 
         returns: Nothing (only updates self.data_weights)
         """
-        # Fill me in!
-        pass
+        if len(self.classifiers) == 0:
+            good = 1.
+        else:
+            current_alpha = error_to_alpha(best_error)
+            good = math.exp(-current_alpha)
+
+        for idx,test in enumerate(self.data):
+            if best_classifier.classify(test) == self.standard.classify(test):
+                factor = good
+            else:
+                factor = 1. / good
+            self.data_weights[idx] = self.data_weights[idx] * factor
+
+        self.renormalize_weights()
 
     def __str__(self):
         classifier_part = '\n'.join(["%4.4f: %s" % (weight, c) for c, weight in
