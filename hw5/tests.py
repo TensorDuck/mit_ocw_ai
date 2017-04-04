@@ -12,7 +12,7 @@ max_iterations = 10000
 
 def neural_net_size_testanswer(val, original_val = None):
     return val <= network_min_size
-"""
+
 make_test(type = 'FUNCTION',
           getargs = lambda: [network_maker_func],
           testanswer = neural_net_size_testanswer,
@@ -279,7 +279,7 @@ make_test(type = 'VALUE',
           )
 
 
-"""
+
 
 classifiers_for_best_ensemble_getargs = "classifiers_for_best_ensemble"
 
