@@ -148,6 +148,13 @@ class BoostClassifier(Classifier):
         self.classifiers = []
         self.standard = standard
 
+    def get_classify_total(self, obj):
+        total = 0.
+        if not len(self.classifiers) == 0:
+            for brain in self.classifiers:
+                total += brain[0].classify(obj) * brain[1]
+        return total
+
     def classify(self, obj):
         """
         Once the boost classifier is trained, this function will use the
@@ -162,10 +169,7 @@ class BoostClassifier(Classifier):
         returns: int (+1 or -1)
         """
 
-        total = 0.
-        if not len(self.classifiers) == 0:
-            for brain in self.classifiers:
-                total += brain[0].classify(obj) * brain[1]
+        total = self.get_classify_total(obj)
         if total >= 0:
             return 1
         else:
@@ -185,10 +189,8 @@ class BoostClassifier(Classifier):
 
         returns: float (between 0 and 1)
         """
-        value = self.classify(obj)
-        if value == -1:
-            return 0
-        return 1
+        total = self.get_classify_total(obj)
+        return sigmoid(total)
 
     def best_classifier(self):
         """

@@ -1,0 +1,133 @@
+Orange version: 2.0b (10:22:57, Aug 16 2016)
+Classes: 2
+Attributes: 4
+Instances: 8 total , 5 with class no , 3 with class yes
+Possible classes: <no, yes>
+  k-Nearest Neighbors classifier:
+  Orange.classification.knn.kNNClassifier 'kNN'
+    1: 0.051 -> no (should be no) correct
+    2: 0.285 -> no (should be no) correct
+    3: 0.400 -> no (should be yes) incorrect
+    4: 0.605 -> yes (should be yes) correct
+    5: 0.580 -> yes (should be yes) correct
+    6: 0.231 -> no (should be no) correct
+    7: 0.306 -> no (should be no) correct
+    8: 0.265 -> no (should be no) correct
+    accuracy on training data: 0.88
+  Support Vector Machine classifier with radial basis kernel:
+  Orange.classification.svm._SVMClassifier 'sVM'
+    1: 0.500 -> yes (should be no) incorrect
+    2: 0.500 -> yes (should be no) incorrect
+    3: 0.290 -> no (should be yes) incorrect
+    4: 0.228 -> no (should be yes) incorrect
+    5: 0.163 -> no (should be yes) incorrect
+    6: 0.500 -> yes (should be no) incorrect
+    7: 0.440 -> no (should be no) correct
+    8: 0.500 -> yes (should be no) incorrect
+    accuracy on training data: 0.12
+  Support Vector Machine classifier with degree 3 polynomial kernel:
+  Orange.classification.svm._SVMClassifier 'sVM'
+    1: 0.410 -> no (should be no) correct
+    2: 0.585 -> yes (should be no) incorrect
+    3: 0.091 -> no (should be yes) incorrect
+    4: 0.282 -> no (should be yes) incorrect
+    5: 0.047 -> no (should be yes) incorrect
+    6: 0.585 -> yes (should be no) incorrect
+    7: 0.410 -> no (should be no) correct
+    8: 0.584 -> yes (should be no) incorrect
+    accuracy on training data: 0.25
+  Support Vector Machine classifier with sigmoid kernel:
+  Orange.classification.svm._SVMClassifier 'sVM'
+    1: 0.415 -> no (should be no) correct
+    2: 0.596 -> yes (should be no) incorrect
+    3: 0.394 -> no (should be yes) incorrect
+    4: 0.277 -> no (should be yes) incorrect
+    5: 0.318 -> no (should be yes) incorrect
+    6: 0.415 -> no (should be no) correct
+    7: 0.398 -> no (should be no) correct
+    8: 0.285 -> no (should be no) correct
+    accuracy on training data: 0.50
+  Support Vector Machine classifier with linear kernel:
+  Orange.classification.svm._SVMClassifier 'sVM'
+    1: 0.391 -> no (should be no) correct
+    2: 0.409 -> no (should be no) correct
+    3: 0.381 -> no (should be yes) incorrect
+    4: 0.373 -> no (should be yes) incorrect
+    5: 0.371 -> no (should be yes) incorrect
+    6: 0.391 -> no (should be no) correct
+    7: 0.388 -> no (should be no) correct
+    8: 0.391 -> no (should be no) correct
+    accuracy on training data: 0.62
+  Decision Tree classifier:
+  shadow?=no
+|    garlic?=no: yes (100.00%)
+|    garlic?=yes: no (100.00%)
+shadow?=yes
+|    garlic?=yes: no (100.00%)
+|    garlic?=no
+|    |    accent?=none: yes (100.00%)
+|    |    accent?=heavy: no (100.00%)
+|    |    accent?=odd: yes (100.00%)
+
+    1: 0.000 -> no (should be no) correct
+    2: 0.000 -> no (should be no) correct
+    3: 1.000 -> yes (should be yes) correct
+    4: 1.000 -> yes (should be yes) correct
+    5: 1.000 -> yes (should be yes) correct
+    6: 0.000 -> no (should be no) correct
+    7: 0.000 -> no (should be no) correct
+    8: 0.000 -> no (should be no) correct
+    accuracy on training data: 1.00
+  Majority classifier:
+  Orange.classification.ConstantClassifier 'constant'
+    1: 0.375 -> no (should be no) correct
+    2: 0.375 -> no (should be no) correct
+    3: 0.375 -> no (should be yes) incorrect
+    4: 0.375 -> no (should be yes) incorrect
+    5: 0.375 -> no (should be yes) incorrect
+    6: 0.375 -> no (should be no) correct
+    7: 0.375 -> no (should be no) correct
+    8: 0.375 -> no (should be no) correct
+    accuracy on training data: 0.62
+  Naive Bayes classifier:
+  Orange.classification.bayes._BayesClassifier 'bayes'
+    1: 0.000 -> no (should be no) correct
+    2: 0.000 -> no (should be no) correct
+    3: 0.510 -> yes (should be yes) correct
+    4: 1.000 -> yes (should be yes) correct
+    5: 0.893 -> yes (should be yes) correct
+    6: 0.000 -> no (should be no) correct
+    7: 0.000 -> no (should be no) correct
+    8: 0.000 -> no (should be no) correct
+    accuracy on training data: 1.00
+Decision Tree boundaries:
+shadow?=no
+|    garlic?=no: yes (100.00%)
+|    garlic?=yes: no (100.00%)
+shadow?=yes
+|    garlic?=yes: no (100.00%)
+|    garlic?=no
+|    |    accent?=none: yes (100.00%)
+|    |    accent?=heavy: no (100.00%)
+|    |    accent?=odd: yes (100.00%)
+
+
+Accuracy with cross-validation:
+  Confusion Matrices:
+    knn: <cm TruPos:0 FlsNeg:3 FlsPos:1 TruNeg:4>
+   svmr: <cm TruPos:0 FlsNeg:3 FlsPos:3 TruNeg:2>
+  svmp3: <cm TruPos:0 FlsNeg:3 FlsPos:1 TruNeg:4>
+   svms: <cm TruPos:1 FlsNeg:2 FlsPos:2 TruNeg:3>
+   svml: <cm TruPos:0 FlsNeg:3 FlsPos:1 TruNeg:4>
+     dt: <cm TruPos:0 FlsNeg:3 FlsPos:2 TruNeg:3>
+    maj: <cm TruPos:0 FlsNeg:3 FlsPos:0 TruNeg:5>
+     nb: <cm TruPos:0 FlsNeg:3 FlsPos:2 TruNeg:3>
+  Classifier   accuracy   Brier       AUC
+  knn          0.500      0.641       0.267
+  svmr         0.250      0.921       0.067
+  svmp3        0.500      0.542       0.533
+  svms         0.500      0.642       0.333
+  svml         0.500      0.867       0.000
+  dt           0.375      0.847       0.500
+  maj          0.625      0.612       0.000
+  nb           0.375      0.894       0.300

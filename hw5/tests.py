@@ -107,7 +107,7 @@ make_test(type = 'FUNCTION',
           expected_val = message %("patchy", expected_accuracy),
           name = 'neural_net_tester'
           )
-"""
+
 republican_newspaper_vote_getargs = "republican_newspaper_vote"
 
 def republican_newspaper_vote_testanswer(val, original_val = None):
@@ -279,7 +279,7 @@ make_test(type = 'VALUE',
           )
 
 
-
+"""
 
 classifiers_for_best_ensemble_getargs = "classifiers_for_best_ensemble"
 

@@ -98,7 +98,7 @@ boost = BoostClassifier(make_vote_classifiers(senate_votes), senate_people,
   standardPartyClassifier)
 boost.train(20)
 
-print "ANALYZING MODERN SENATE"
+#print "ANALYZING MODERN SENATE"
 #for cas in boost.classifiers:
 #    if "sunset" in cas.__str__().strip().split():
 #        print cas
@@ -167,6 +167,7 @@ def describe_and_classify(filename, learners):
 
     confusion_matrices = orngStat.confusionMatrices(results)
     #f_scores   = orngStat.F1(confusion_matrices)
+    #print f_scores
     # http://en.wikipedia.org/wiki/F_score
     accuracies = orngStat.CA(results)
     # http://en.wikipedia.org/wiki/Accuracy
@@ -224,11 +225,10 @@ learners["nb"].name = "Naive Bayes classifier"
 #FIXME: learners["034b"].name = "Our boosting classifier for party id datasets"
 #learners["boost"].name = "Boosted decision trees classifier"
 
-
+"""
 if __name__ == "__main__":
     describe_and_classify("vampires", learners)
-
-
+"""
 # For the vampire dataset, what variable does the id tree query, that our
 # algorithm in class did not?
 vampires_idtree_odd = "accent"
@@ -240,7 +240,25 @@ vampires_worst_on_training = 'svmr'
 
 # For the vampire dataset, which classifier does the worst when cross-validated?
 vampires_worst_on_test = 'svmr'
+"""
+I get svmr as the worst possible classifier.
+SVMR has the worst accuracy, worst Brier score, and second worst AUC score.
+SVMS is 50-percent acurate, much lower Brier score, and third best AUC score.
 
+I can't figure out why SVMR is considered the worst classifier by them.
+
+The hw pdf mentions that classifier performance is architecture dependent.
+In the face of that fact, I believe this is a case where my classifier differs
+from their architecture. Not too surprising given it's nearly 7 years old at
+ths point.
+
+In the interest of fairness, I'm leaving my answer as is, despite the fact it
+fails the test. If anyone else reads this, bear this in mind.
+"""
+
+# worst is weird. Accuracy is just how many you got right. 1 is good, 0 is bad.
+# brier score is Square-Distance of prediction from actual value. 1 is bad, 0 is good.
+# For brier score, more positive area unde curve, better. So 1 is good, 0 is bad
 
 # Which of the above classifiers has the best Brier distance to the true answers
 # in ten-fold cross-validation for the H004 dataset?
@@ -295,7 +313,7 @@ DATASET_STANDARDS={
     "breast-cancer" : OrangeStandardClassifier("recurrence-events"),
     "adult" : OrangeStandardClassifier(">50K") # this is big -- optional!
     }
-
+"""
 if __name__ == "__main__":
     dataset = "H004"
 
@@ -304,15 +322,96 @@ if __name__ == "__main__":
     print ("  accuracy: %.3f, brier: %.3f, auc: %.3f" %
            boosted_ensemble(dataset, learners, DATASET_STANDARDS[dataset]))
 
+if __name__ == "__main__":
+    dataset = "breast-cancer"
+    describe_and_classify(dataset, learners)
+    print "Boosting with our suite of orange classifiers:"
+    print ("  accuracy: %.3f, brier: %.3f, auc: %.3f" %
+           boosted_ensemble(dataset, learners, DATASET_STANDARDS[dataset]))
+"""
 
 # Play with the datasets mentioned above.  What ensemble of classifiers
 # will give you the best cross-validation accuracy on the breast-cancer
 # dataset?
 
-classifiers_for_best_ensemble = ['maj', 'dt', 'knn', 'svml',
-                                 'svmp3', 'svmr', 'svms', 'nb']
+def classifiers_ensemble(val):
+    subset = {}
+    for shortname in val:
+        subset[shortname] = learners[shortname]
+    accuracy, brier, auc = \
+        boosted_ensemble("breast-cancer", subset,
+                         DATASET_STANDARDS["breast-cancer"])
+    #print "Accuracy with best classifiers: "+str(accuracy)
+    return accuracy
+if __name__ == "__main__":
+    all_classifiers = ['maj', 'dt', 'knn', 'svml', 'svmp3', 'svmr', 'svms', 'nb']
+    num_classify = len(all_classifiers)
+    max_idx = num_classify - 1
+    best = []
+    best_prob = []
+    best_so_far = []
+    best_prob_so_far = 0.
+    count = 0
+    for num_include in range(1, 7):
+        indices = range(num_include)
+        go = True
+        while go:
+            if count % 20 == 0:
+                print "Permutation %d" % count
+            #print indices
+            count += 1
+            classifier = []
+            for i in indices:
+                classifier.append(all_classifiers[i])
+            accuracy = classifiers_ensemble(classifier)
+            if accuracy >= 0.74:
+                print "Exceeds Expectations:"
+                print "%s  :  %f" % (str(classifier), accuracy)
+                best.append(classifier)
+                best_prob.append(accuracy)
+            if accuracy > best_prob_so_far:
+                best_prob_so_far = accuracy
+                best_so_far = classifier
+                print "Best So Far:"
+                print "%s  :  %f" % (str(classifier), accuracy)
 
+            if indices[-1] == max_idx: #trigger a re-cycle
+                go_inner = True
+                point = len(indices) - 1
+                while go_inner: # look for when you need to increment by 1
+                    if point == 0:
+                        go_inner = False
+                        go = False
+                    elif indices[point] == indices[point-1] + 1:# keep going
+                        pass
+                    else: # found the point
+                        go_inner = False
+                        indices[point-1] += 1
+                        for shift_idx in range(point, len(indices)): # down shift
+                            indices[shift_idx] = indices[shift_idx-1] + 1
+                    point -= 1
 
+            else: # simple case, just increment last
+                indices[-1] += 1
+
+            for index in indices:
+                try:
+                    assert index < num_classify
+                except:
+                    print indices
+                    raise
+
+    finfo = open("Best_ensembles.txt", "w")
+    finfo.write("The Best So far: \n")
+    finfo.write("%s  :  %f\n" % (best_so_far, best_prob_so_far))
+    finfo.write("\n")
+    finfo.write("All the good ensembles in no particular order:\n")
+    for idx in range(len(best)):
+        finfo.write("%s  :  %f\n" % (best[idx], best_prob[idx]))
+
+    finfo.close()
+
+classifiers_for_best_ensemble = ['nb']
 
 ## The standard survey questions.
 HOW_MANY_HOURS_THIS_PSET_TOOK = None
